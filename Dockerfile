@@ -1,29 +1,22 @@
-# 使用輕量化 Python 鏡像
 FROM python:3.11-slim
 
-# 設定工作目錄
 WORKDIR /app
 
-# 安裝基本系統套件
-RUN apt-get update && apt-get install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# 安裝系統依賴與 uvicorn
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-# 複製依賴清單並安裝
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 確保 requirements.txt 裡有 uvicorn
+RUN pip install --no-cache-dir -r requirements.txt uvicorn
 
-# 重要：在構建階段就先下載模型，避免 Zeabur 啟動時因為下載太久而超時
+# 預先下載模型
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-m3')"
 
-# 複製其餘程式碼
 COPY . .
 
-# 宣告對外埠號為 8080
+# 宣告 8080 埠
 EXPOSE 8080
 
-# 設定環境變數，確保 Python 輸出日誌能即時顯示
-ENV PYTHONUNBUFFERED=1
-
-# 啟動命令
-CMD ["python", "server.py"]
+# 關鍵修改：使用 uvicorn 啟動
+# server:mcp.app 的意思是：尋找 server.py 檔案裡的 mcp 物件的 app 屬性
+CMD ["uvicorn", "server:mcp.app", "--host", "0.0.0.0", "--port", "8080"]
