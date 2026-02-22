@@ -3,10 +3,10 @@ from mcp.server.fastmcp import FastMCP
 from sentence_transformers import SentenceTransformer
 import torch
 
-# 初始化 FastMCP
+# 初始化 FastMCP 實例
 mcp = FastMCP("BGE-M3-Memory-Server")
 
-# 加載模型 (優先檢查有無 GPU)
+# 加載模型
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Loading BGE-M3 model on {device}...")
 model = SentenceTransformer('BAAI/bge-m3', device=device)
@@ -17,15 +17,5 @@ async def generate_embedding(text: str) -> list[float]:
     embedding = model.encode(text, normalize_embeddings=True)
     return embedding.tolist()
 
-if __name__ == "__main__":
-    # 取得 Zeabur 可能提供的 PORT 環境變數，若無則預設為 8080
-    port = int(os.environ.get("PORT", 8080))
-    
-    print(f"🚀 Starting MCP Server on port {port}...")
-    
-    # 執行伺服器，並明確綁定 0.0.0.0 與 8080
-    mcp.run(
-        transport="sse",
-        host="0.0.0.0", 
-        port=port
-    )
+# 注意：這裡不要寫 if __name__ == "__main__": mcp.run(...)
+# 因為我們改用 uvicorn 來啟動 mcp.app
