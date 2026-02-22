@@ -17,6 +17,5 @@ COPY . .
 # 宣告 8080 埠
 EXPOSE 8080
 
-# 關鍵修改：使用 uvicorn 啟動
-# server:mcp.app 的意思是：尋找 server.py 檔案裡的 mcp 物件的 app 屬性
-CMD ["uvicorn", "server:mcp.app", "--host", "0.0.0.0", "--port", "8080"]
+# 修正後的啟動指令：指向 server.py 裡的 app 變數
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
