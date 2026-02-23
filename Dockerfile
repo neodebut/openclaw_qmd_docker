@@ -1,21 +1,18 @@
-FROM python:3.11-slim
+# 採用 OpenClaw 官方最新映像檔
+FROM openclaw/openclaw:latest
 
-WORKDIR /app
+# 安裝所需系統依賴
+RUN apt-get update && apt-get install -y curl unzip
 
-# 安裝系統依賴與 uvicorn
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+# 安裝 Bun 運行環境
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
 
-COPY requirements.txt .
-# 確保 requirements.txt 裡有 uvicorn
-RUN pip install --no-cache-dir -r requirements.txt uvicorn
+# 全域安裝 qmd CLI 工具
+RUN bun install -g https://github.com/tobi/qmd
 
-# 預先下載模型
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-m3')"
+# 確保工作目錄權限
+WORKDIR /root/.openclaw
 
-COPY . .
-
-# 宣告 8080 埠
-EXPOSE 8080
-
-# 修正後的啟動指令：指向 server.py 裡的 app 變數
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
+# 執行 OpenClaw 主程式
+CMD ["openclaw", "start"]
