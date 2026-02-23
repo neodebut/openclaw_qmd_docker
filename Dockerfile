@@ -1,5 +1,5 @@
 # 採用 OpenClaw 官方最新映像檔
-FROM openclaw/openclaw:latest
+FROM ghcr.io/openclaw/openclaw:latest
 
 # 安裝所需系統依賴
 RUN apt-get update && apt-get install -y curl unzip
